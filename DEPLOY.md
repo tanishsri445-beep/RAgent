@@ -4,10 +4,22 @@ This guide puts the app on a public link such as
 `https://ragverify-demo.streamlit.app` that anyone can open. No coding is
 needed. It takes about 15 minutes.
 
-**How payment works in this setup:** every visitor types their *own* OpenAI
-API key into the sidebar. Hosting is free, and you are never charged for
-other people's questions. The key stays in that visitor's browser session
-only; it is never saved on the server.
+**How payment works in this setup:** every visitor picks an AI provider in
+the sidebar and types their *own* key. Hosting is free, and you are never
+charged for other people's questions. The key stays in that visitor's browser
+session only; it is never saved on the server.
+
+| Provider (sidebar) | Cost | Where to get a key |
+|---|---|---|
+| **Google Gemini (free tier)**, the default | Free. Google account, no card | <https://aistudio.google.com/apikey> → **Create API key** |
+| OpenAI (paid) | Pay per use; needs credit | <https://platform.openai.com/api-keys> (key starts with `sk-`) |
+
+Free Gemini keys have per-minute and per-day request limits. The default
+model, `gemini-3.5-flash-lite`, has the most generous daily allowance; the
+other Gemini models in the list allow far fewer requests per day. The cost
+meter shows `$0.0000` for Gemini because it is free. Google may use
+free-tier prompts to improve its products, so don't upload confidential
+documents on a free key.
 
 ---
 
@@ -16,8 +28,8 @@ only; it is never saved on the server.
 1. A free **GitHub** account: <https://github.com/signup>
    (GitHub stores your code online. The hosting service reads it from there.)
 2. Nothing else. Streamlit Community Cloud signs in with your GitHub account.
-3. To *try* the app yourself, an OpenAI API key from
-   <https://platform.openai.com/api-keys> with some credit on the account.
+3. To *try* the app yourself, a free Gemini API key from
+   <https://aistudio.google.com/apikey> (or a paid OpenAI key).
 
 ---
 
@@ -111,7 +123,8 @@ spend money).
 ## Step 3: Check it works
 
 1. Open your app link.
-2. In the sidebar, paste your OpenAI API key.
+2. In the sidebar, keep **Google Gemini (free tier)** selected and paste
+   your Gemini API key.
 3. Upload a small PDF or `.txt` file and ask a question about it, e.g.
    "What is the main conclusion of this document?"
 4. You should see the steps stream in, followed by an answer with sources.
@@ -145,7 +158,11 @@ within a minute or two.
 |---|---|---|
 | Build log: `ModuleNotFoundError` or "No such file app.py" | Files were uploaded inside an extra folder, so `requirements.txt` / `app.py` are not at the top level | Re-upload so `app.py` sits at the repository root, or set "Main file path" to the subfolder path (e.g. `ragverify-main/app.py`) |
 | Build log: errors installing `numpy` / `tiktoken` | Unusual Python version selected | Delete the app and redeploy with Python 3.12 |
-| "Add your OpenAI API key in the sidebar." | No key entered | Paste a key in the sidebar |
+| "Add your … API key in the sidebar." | No key entered | Paste a key in the sidebar |
+| Warnings show `Error code: 400` with Gemini selected | Gemini key mistyped, or an OpenAI key pasted while Gemini is selected | Check the **AI provider** matches your key; copy the key again from aistudio.google.com/apikey |
+| Warnings show `429` / "RESOURCE_EXHAUSTED" with Gemini | Free-tier per-minute or per-day limit reached | Wait a minute (or until tomorrow), keep the model on `gemini-3.5-flash-lite`, lower "Max rounds" to 1–2, and turn off Entailment / Rerank / Multi-hop |
+| Warnings show `404` / model not found with Gemini | Google renamed or retired that model | Pick another Gemini model in the sidebar; tell your developer to update the list in `app.py` (`PROVIDERS`) |
+| `Incorrect API key provided: key_…` | A non-OpenAI key pasted while OpenAI is selected | Switch the provider to Gemini, or use an OpenAI key starting with `sk-` |
 | `LLM call failed ... 401` / "Incorrect API key" | Key mistyped or revoked | Create a new key at platform.openai.com |
 | `LLM call failed ... 429` / "insufficient_quota" | The OpenAI account has no credit, or hit its rate limit | Add credit in OpenAI billing, or wait a minute |
 | `model_not_found` or "does not have access to model" | That OpenAI account cannot use the selected model | Pick another model in the sidebar, e.g. `gpt-4o-mini` |

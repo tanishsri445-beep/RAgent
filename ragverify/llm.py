@@ -134,7 +134,9 @@ class LLMClient:
 
                 # Some gateways and older models 400 on response_format.
                 # Drop it once and retry in plain mode rather than failing.
-                if "response_format" in message or "json_schema" in message:
+                # Gemini's OpenAI-compatible endpoint reports schema problems
+                # as "response_schema", so that is treated the same way.
+                if "response_format" in message or "json_schema" in message or "response_schema" in message:
                     self._structured_supported = False
                     kwargs.pop("response_format", None)
                     continue

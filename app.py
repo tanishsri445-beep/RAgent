@@ -37,6 +37,30 @@ _OUTCOME = {
     Outcome.BUDGET: "⏱",
 }
 
+# AI providers a visitor can choose. Each visitor brings their own key; nothing
+# here is a secret. Google Gemini has a free tier and an OpenAI-compatible
+# endpoint, so the same client code talks to it by switching ``base_url``.
+PROVIDERS = {
+    "Google Gemini (free tier)": {
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "key_label": "Gemini API key",
+        "key_help": "Free key: aistudio.google.com/apikey (Google account, no card). "
+                    "Free-tier requests per minute/day are limited; cost shows $0.",
+        # Flash-Lite first: the free tier allows far more requests per day on it.
+        "models": ["gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.8-flash", "gemini-4-hydrogen"],
+        "default_index": 0,
+        "embed_model": "gemini-embedding-001",
+    },
+    "OpenAI (paid)": {
+        "base_url": None,  # None = official OpenAI endpoint (or OPENAI_BASE_URL if set)
+        "key_label": "OpenAI API key",
+        "key_help": "Key starts with sk-. Get one at platform.openai.com/api-keys (needs credit).",
+        "models": list(MODEL_PRICING),
+        "default_index": list(MODEL_PRICING).index(DEFAULT_MODEL),
+        "embed_model": None,  # None = default / RAGVERIFY_EMBED_MODEL
+    },
+}
+
 
 def _init_state() -> None:
     st.session_state.setdefault("corpus", None)
@@ -54,8 +78,11 @@ with st.sidebar:
     st.markdown("### ◆ RagVerify")
     st.caption("Evidence-gated multi-agent research")
 
-    api_key = st.text_input("OpenAI API key", type="password", help="Kept in session only.")
-    model = st.selectbox("Model", list(MODEL_PRICING), index=list(MODEL_PRICING).index(DEFAULT_MODEL))
+    provider_name = st.selectbox("AI provider", list(PROVIDERS))
+    provider = PROVIDERS[provider_name]
+    api_key = st.text_input(f"{provider['key_label']}", type="password", help="Kept in session only.")
+    st.caption(provider["key_help"])
+    model = st.selectbox("Model", provider["models"], index=provider["default_index"])
 
     st.divider()
     st.markdown("**Adaptive loop**")
@@ -115,6 +142,8 @@ with st.sidebar:
 
 settings = Settings.from_env(
     api_key=api_key,
+    base_url=provider["base_url"],
+    embed_model=provider["embed_model"],
     model=model,
     max_rounds=max_rounds,
     min_support_rate=min_support,
@@ -176,7 +205,7 @@ def _ensure_corpus(client: LLMClient, tracer: Tracer):
 
 if run:
     if not settings.api_key:
-        st.error("Add your OpenAI API key in the sidebar.")
+        st.error(f"Add your {provider['key_label']} in the sidebar.")
         st.stop()
 
     trace_box = st.container()
