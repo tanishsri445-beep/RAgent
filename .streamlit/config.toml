@@ -1,0 +1,11 @@
+# Streamlit settings used when the app is deployed (and when run locally).
+# Safe to delete: the app works without this file.
+
+[server]
+# Largest file a visitor may upload, in megabytes. Streamlit's default is 200,
+# which can exhaust the ~1 GB of memory on a free hosting plan.
+maxUploadSize = 50
+
+[browser]
+# Do not send anonymous usage statistics to Streamlit.
+gatherUsageStats = false

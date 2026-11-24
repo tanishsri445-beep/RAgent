@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+.idea/
+.vscode/
+evals/results/
+
+# local embedding cache
+.cache/
+*.npz
+
+# annotation labels are per-team data, not repository content
+evals/annotate/data/
